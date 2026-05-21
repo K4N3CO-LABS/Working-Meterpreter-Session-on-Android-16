@@ -114,8 +114,10 @@ adb shell am broadcast -n com.example.app/com.example.app.qvqna.Ygdsa
 ```text
 [*] Meterpreter session 1 opened successfully established.
 ```
+### To Do
 
+Currently it only works with ADB plugged into USB. Need to figure out wireless meterpreter sessions.
+Android 16 seems to block it in every configuration I've tried so far...
 
 ---
-
 **Disclaimer:** This guide is for educational and authorized security testing purposes only.
