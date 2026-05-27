@@ -110,9 +110,15 @@ adb shell am broadcast -n com.example.app/com.example.app.qvqna.Ygdsa
 ```
 ### To Do
 
-Currently it only works with ADB plugged into USB. Need to figure out wireless meterpreter sessions.
+Currently this only works with ADB plugged into USB. I Need to figure out wireless meterpreter sessions.
 Android 16 seems to block it in every configuration I've tried so far...
 
-**Please 🌟 if you find this guide useful/helpful. Thanks**
+Feel free to open issues or submit pull requests. Contributions are welcome!
+
+### ⭐ Support the Project
+
+If you find this guide useful, please consider giving the project a **star** ⭐ — it helps a lot!
+
 ---
+
 **Disclaimer:** This guide is for educational and authorized security testing purposes only. Enjoy!
