@@ -6,7 +6,7 @@
 
 **If done properly this guide now achieves fully wireless meterpreter sessions without the need to even be on the same wifi.**
 
-This repository documents the technical process of injecting a Metasploit payload into an Android application package (APK), engineering the manifest to allow explicit execution, cryptographically signing the binary, and deploying it locally via ADB for security testing. **Update this guide now achieves fully wireless meterpreter sessions without the need to even be on the same wifi if done properly.
+This repository documents the technical process of injecting a Metasploit payload into an Android application package (APK), engineering the manifest to allow explicit execution, cryptographically signing the binary, and deploying it locally via ADB for security testing.
 
 ## Prerequisites
 
