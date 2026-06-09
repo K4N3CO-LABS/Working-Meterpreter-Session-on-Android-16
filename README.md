@@ -66,7 +66,7 @@ apksigner sign --ks my-release-key.jks --out signed_example.apk payload_example.
 Install onto phone using ADB or make app release on github for people to download or find a way to it get onto target phone/tablet. Be creative.
 or ADB plug in phone and enter this :
 ```
-adb install --bypass-low-target-sdk-block signed_payload.apk
+adb install --bypass-low-target-sdk-block signed_example.apk
 ```
 ---
 
