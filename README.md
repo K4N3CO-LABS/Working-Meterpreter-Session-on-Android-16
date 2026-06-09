@@ -119,7 +119,7 @@ sessions -i 1 (or # of session you want to open)
 ### BOOOOOOM!!!
 You got a meterpreter open! (type help to see commands available)
 
-Feel free to open issues or submit pull requests. Contributions are welcome!
+Contributions are welcome!
 
 ### ⭐ Support the Project
 
