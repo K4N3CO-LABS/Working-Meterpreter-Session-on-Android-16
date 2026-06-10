@@ -61,7 +61,7 @@ apktool d payload_example.apk -o example_folder
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
 
-# And replace <service near the bottom to this:
+# Replace <service near the bottom to this:
  <service android:exported="false" android:name=".MainService" android:enabled="true" android:foregroundServiceType="specialUse"/>
 
 # And make sure this is present inside the <activity section:
