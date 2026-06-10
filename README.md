@@ -162,8 +162,8 @@ run
 meterpreter > help (to see available commands)
 meterpreter > wakelock 
 background (to go back to msfconsole without killing session)
-sessions -l (to list sessions)
-sessions -i 1 (or # of session you want to open)
+msf exploit(multi/handler) > sessions -l (to list sessions)
+msf exploit(multi/handler) > sessions -i 1 (or # of session you want to open)
 ```
 ### BOOOOOOM!!!
 You got stageless meterpreter sessions open! 
