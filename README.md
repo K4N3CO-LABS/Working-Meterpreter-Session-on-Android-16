@@ -34,7 +34,7 @@ Decompile the binary package to modify its configuration, then recompile it to e
 
 ### 1. Decompile the APK
 ```bash
-apktool d example_folder payload_example.apk 
+apktool d payload_example.apk -o example_folder
 ```
 
 ### 2. Modify the Manifest
@@ -59,7 +59,7 @@ cd ..
 ```
 ```bash
 # then recompile the apk
-apktool b example_folder payload_example.apk
+apktool b example_folder -o payload_example.apk
 ```
 
 ---
